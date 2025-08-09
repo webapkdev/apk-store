@@ -14,6 +14,8 @@
 </header>
 
 <main class="container">
+
+  <!-- Pending Apps -->
   <section>
     <h2>Pending Apps</h2>
     <table class="table" id="pendingTable">
@@ -21,6 +23,16 @@
       <tbody></tbody>
     </table>
   </section>
+
+  <!-- Approved Apps -->
+  <section style="margin-top:2rem;">
+    <h2>Approved Apps</h2>
+    <table class="table" id="approvedTable">
+      <thead><tr><th>Icon</th><th>Name</th><th>Uploader</th><th>Actions</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
 </main>
 
 <script>
@@ -32,6 +44,7 @@
     if (user.role !== "admin") { alert("Admin access required"); window.location.href = "index.html"; return; }
   })();
 
+  // Load pending apps
   async function loadPending() {
     const res = await fetch("/pending-apps");
     const list = await res.json();
@@ -52,12 +65,34 @@
     });
   }
 
+  // Load approved apps
+  async function loadApproved() {
+    const res = await fetch("/apps");
+    const list = await res.json();
+    const tbody = document.querySelector("#approvedTable tbody");
+    tbody.innerHTML = "";
+    list.forEach(a => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><img src="${a.icon}" width="60"></td>
+        <td>${escapeHtml(a.appName)}<br><small>${escapeHtml(a.description)}</small></td>
+        <td>${escapeHtml(a.uploader || "unknown")}</td>
+        <td>
+          <a class="btn" href="${a.apk}" target="_blank">Download</a>
+          <button class="btn" onclick="deleteApp(${a.id})">Delete</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
   async function approve(id){
     if (!confirm("Approve this app?")) return;
     const res = await fetch("/approve-app", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ id }) });
     const j = await res.json();
-    if (j.success) { loadPending(); alert("Approved"); } else alert("Failed");
+    if (j.success) { loadPending(); loadApproved(); alert("Approved"); } else alert("Failed");
   }
+
   async function reject(id){
     if (!confirm("Reject/remove this app?")) return;
     const res = await fetch("/reject-app", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ id }) });
@@ -65,7 +100,18 @@
     if (j.success) { loadPending(); alert("Removed"); } else alert("Failed");
   }
 
-  window.addEventListener("DOMContentLoaded", loadPending);
+  async function deleteApp(id){
+    if (!confirm("Delete this app permanently?")) return;
+    const res = await fetch(`/apps/${id}`, { method: "DELETE" });
+    const j = await res.json();
+    if (j.success) { loadApproved(); alert("Deleted"); } else alert("Failed");
+  }
+
+  window.addEventListener("DOMContentLoaded", () => {
+    loadPending();
+    loadApproved();
+  });
+
   function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 </script>
 </body>

@@ -128,6 +128,21 @@ app.post("/reject-app", (req, res) => {
     writeJSON("apps.json", apps);
     res.json({ success: true });
 });
+// Admin: Delete app (approved or not)
+app.delete("/apps/:id", (req, res) => {
+    const id = parseInt(req.params.id);
+    let apps = readJSON("apps.json");
+    const appExists = apps.some(a => a.id === id);
+
+    if (!appExists) {
+        return res.status(404).json({ success: false, message: "App not found" });
+    }
+
+    apps = apps.filter(a => a.id !== id);
+    writeJSON("apps.json", apps);
+    res.json({ success: true, message: "App deleted successfully" });
+});
+
 
 // Fallback: Serve index.html for unknown routes
 app.get("*", (req, res) => {
