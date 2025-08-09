@@ -5,7 +5,7 @@ const cors = require("cors");
 const multer = require("multer");
 
 const app = express();
-const PORT = 8000;
+const PORT = process.env.PORT || 8000; // Hosting friendly
 
 app.use(cors());
 app.use(express.json());
@@ -31,20 +31,17 @@ initJSON("users.json", [
     { username: "dev", password: "dev123", role: "developer" }
 ]);
 
-// Serve frontend
+// ---------- Serve frontend ----------
 app.use(express.static(path.join(__dirname, "../frontend")));
 
-// Serve uploaded files
+// ---------- Serve uploaded files ----------
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
-// File upload config
+// ---------- File upload config ----------
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        if (file.fieldname === "icon") {
-            cb(null, iconDir);
-        } else if (file.fieldname === "apk") {
-            cb(null, apkDir);
-        }
+        if (file.fieldname === "icon") cb(null, iconDir);
+        else if (file.fieldname === "apk") cb(null, apkDir);
     },
     filename: function (req, file, cb) {
         cb(null, Date.now() + path.extname(file.originalname));
@@ -52,7 +49,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-// Helper: Safe read JSON
+// ---------- JSON Helpers ----------
 function readJSON(file) {
     const filePath = path.join(__dirname, file);
     try {
@@ -61,24 +58,19 @@ function readJSON(file) {
         return [];
     }
 }
-
-// Helper: Write JSON
 function writeJSON(file, data) {
     fs.writeFileSync(path.join(__dirname, file), JSON.stringify(data, null, 2), "utf8");
 }
 
-// ---------------- Routes ----------------
+// ---------- Routes ----------
 
 // Login
 app.post("/login", (req, res) => {
     const { username, password } = req.body;
     const users = readJSON("users.json");
     const user = users.find(u => u.username === username && u.password === password);
-    if (user) {
-        res.json({ success: true, role: user.role, username: user.username });
-    } else {
-        res.json({ success: false, message: "Invalid username or password" });
-    }
+    if (user) res.json({ success: true, role: user.role, username: user.username });
+    else res.json({ success: false, message: "Invalid username or password" });
 });
 
 // Upload new app (developer)
@@ -125,9 +117,7 @@ app.post("/approve-app", (req, res) => {
         apps[appIndex].approved = true;
         writeJSON("apps.json", apps);
         res.json({ success: true });
-    } else {
-        res.json({ success: false, message: "App not found" });
-    }
+    } else res.json({ success: false, message: "App not found" });
 });
 
 // Admin: Reject app
@@ -139,7 +129,12 @@ app.post("/reject-app", (req, res) => {
     res.json({ success: true });
 });
 
-// Start server
+// Fallback: Serve index.html for unknown routes
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/index.html"));
+});
+
+// ---------- Start server ----------
 app.listen(PORT, () => {
     console.log(`✅ Backend running at http://localhost:${PORT}`);
 });
