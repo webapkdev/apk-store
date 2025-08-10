@@ -1,22 +1,26 @@
-const CACHE_NAME = 'apk-store-cache-v1';
+// CHANGED: Updated version number so browser clears old cache
+const CACHE_NAME = 'apk-store-cache-v2';  
+
+// CHANGED: Made all paths RELATIVE ("./") instead of absolute ("/frontend/...")
+// This ensures the files load correctly when opened in standalone PWA mode
 const ASSETS_TO_CACHE = [
-  '/frontend/index.html',
-  '/frontend/style.css',
-  '/frontend/script.js',
-  '/frontend/profile.html',
-  '/frontend/admin.html',
-  '/frontend/developer.html',
-  '/frontend/login.html',
-  '/frontend/settings.html',
-  '/frontend/icons/icon-192.png',
-  '/frontend/icons/icon-512.png'
+  './index.html',
+  './style.css',
+  './script.js',
+  './profile.html',
+  './admin.html',
+  './developer.html',
+  './login.html',
+  './settings.html',
+  './icons/icon-192.png',
+  './icons/icon-512.png'
 ];
 
 // Install Service Worker
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      console.log('Caching app assets');
+      console.log('Caching app assets...');
       return cache.addAll(ASSETS_TO_CACHE);
     })
   );
