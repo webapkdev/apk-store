@@ -4,11 +4,16 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>APK Store - Home</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="./style.css">
 
 <!-- PWA manifest -->
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="./manifest.json">
 <meta name="theme-color" content="#0d6efd">
+
+<!-- iOS support -->
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 </head>
 <body>
 <header class="topbar">
@@ -19,7 +24,7 @@
   </div>
 
   <div class="controls">
-    <a class="btn" href="profile.html" id="profileLink">Profile</a>
+    <a class="btn" href="./profile.html" id="profileLink">Profile</a>
     <div class="dropdown-wrap">
       <button id="settingsBtn" class="btn">⚙ Settings</button>
       <div id="settingsMenu" class="dropdown">
@@ -37,12 +42,12 @@
   <div id="noApps" class="msg" style="display:none">No apps available yet.</div>
 </main>
 
-<script src="script.js"></script>
+<script src="./script.js"></script>
 
 <!-- Register Service Worker -->
 <script>
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js')
+  navigator.serviceWorker.register('./sw.js')
     .then(() => console.log('Service Worker registered successfully.'))
     .catch(err => console.error('Service Worker registration failed:', err));
 }
